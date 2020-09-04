@@ -24,12 +24,16 @@ Sometimes the bot `does not have new updates`, so you can't rely on the `updates
 
 ```bash
 $ gqm -h
+Usage of gqm:
+  -debugInfo
+        To get debug information
   -follow
         To keep the stdin open
   -markdown
         Force markdown on the entire message, if is not, do it by yourself adding backquotes
   -verbose
         To be verbose
+
 ```
 
 ## Use cases
