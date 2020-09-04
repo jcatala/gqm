@@ -95,8 +95,8 @@ func updateIni(s string){
 	if err != nil{
 		log.Fatalln(err)
 	}
-	cfg.Section("").Key("saved_chat_id").SetValue(s)
-	cfg.SaveTo("gqm.ini")
+	cfg.Section("DEFAULT").Key("saved_chat_id").SetValue(s)
+	cfg.SaveTo(cfgPath)
 
 }
 
@@ -183,13 +183,16 @@ func main() {
 	verbose := flag.Bool("verbose",false, "To be verbose")
 	follow := flag.Bool("follow", false, "To keep the stdin open ")
 	md := flag.Bool("markdown", false, "Force markdown on the entire message, if is not, do it by yourself adding backquotes")
+	debugInfo := flag.Bool("debugInfo", false, "To get debug information")
 	flag.Parse()
-	fmt.Printf("The value of test is %s\n", *verbose)
+
 
 
 	m := parseConfig(*verbose)
 	bot := genBot(m["apikey"])
-	bot.Debug = true
+	if *debugInfo{
+		bot.Debug = true
+	}
 	if *verbose != false{
 		log.Printf("Authorizing account %s\n", bot.Self.UserName)
 	}
