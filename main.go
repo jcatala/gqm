@@ -100,7 +100,7 @@ func updateIni(s string){
 
 }
 
-func getNewChatId(bot *tgbotapi.BotAPI, saved string, v bool)  string{
+func getNewChatId(bot *tgbotapi.BotAPI, saved string, v bool)  (string, error){
 	if v != false{
 		fmt.Println("Getting updates")
 	}
@@ -109,7 +109,16 @@ func getNewChatId(bot *tgbotapi.BotAPI, saved string, v bool)  string{
 	updates, err := bot.GetUpdates(u)
 	if err != nil{
 		fmt.Println(err)
-		return saved
+		return saved, nil
+	}
+
+	if len(updates) < 1 && saved == "" {
+		// if there's no updates, and the saved is not valid, we must throw an error
+		return "", errors.New("ERROR: No update, and no chat ID valid, EXITING...")
+	}
+	if len(updates) < 1 && saved != "" {
+		// If there's no update, and the saved is valid, try to send to the saved
+		return saved, nil
 	}
 
 	newChatId := updates[len(updates)-1].Message.Chat.ID
@@ -119,7 +128,7 @@ func getNewChatId(bot *tgbotapi.BotAPI, saved string, v bool)  string{
 		updateIni(newChatIdstr)
 	}
 
-	return newChatIdstr
+	return newChatIdstr, nil
 }
 
 func sendMsgFollow(bot *tgbotapi.BotAPI, chatIdInt int64 , md bool, v bool){
@@ -186,7 +195,10 @@ func main() {
 	}
 
 	// We ask for a new chat id, and see if its need to be updated or not
-	chatId := getNewChatId(bot,m["savedChatId"] , *verbose)
+	chatId, err := getNewChatId(bot,m["savedChatId"] , *verbose)
+	if err != nil{
+		log.Fatalln(err)
+	}
 	chatIdInt, err := strconv.ParseInt(chatId, 10 , 64)
 	if err != nil{
 		log.Fatalln(err)
