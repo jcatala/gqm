@@ -31,6 +31,7 @@ import (
 	"gopkg.in/ini.v1"
 	"os"
 	"strconv"
+	"strings"
 )
 
 
@@ -94,7 +95,7 @@ func getNewChatId(bot *tgbotapi.BotAPI, saved string, v bool)  string{
 	return newChatIdstr
 }
 
-func sendMsgFollow(bot *tgbotapi.BotAPI, chatIdInt int64 ,v bool){
+func sendMsgFollow(bot *tgbotapi.BotAPI, chatIdInt int64 , md bool, v bool){
 
 	reader := bufio.NewReader(os.Stdin)
 	for {
@@ -103,7 +104,15 @@ func sendMsgFollow(bot *tgbotapi.BotAPI, chatIdInt int64 ,v bool){
 			break
 		}
 		fmt.Printf("Sending the following: %s\n", line)
-		msg := tgbotapi.NewMessage(chatIdInt, string(line))
+		var str strings.Builder
+		dataStr := string(line)
+		if md {
+			str.WriteString("`")
+			str.WriteString(string(line))
+			str.WriteString("`")
+			dataStr = str.String()
+		}
+		msg := tgbotapi.NewMessage(chatIdInt, dataStr)
 		msg.ParseMode = "MarkdownV2"
 		bot.Send(msg)
 	}
@@ -111,7 +120,7 @@ func sendMsgFollow(bot *tgbotapi.BotAPI, chatIdInt int64 ,v bool){
 
 }
 
-func sendMsgQuick(bot *tgbotapi.BotAPI, chatIdInt int64, v bool){
+func sendMsgQuick(bot *tgbotapi.BotAPI, chatIdInt int64, md bool,  v bool){
 	data, err := ioutil.ReadAll(os.Stdin)
 	if err != nil{
 		log.Fatalln(err)
@@ -119,15 +128,25 @@ func sendMsgQuick(bot *tgbotapi.BotAPI, chatIdInt int64, v bool){
 	if v {
 		fmt.Printf("Sending the following line: \n%s\n", data)
 	}
-	msg := tgbotapi.NewMessage(chatIdInt, string(data))
+	var str strings.Builder
+	dataStr := string(data)
+	if md {
+		str.WriteString("```\n")
+		str.WriteString(string(data))
+		str.WriteString("\n```")
+		dataStr = str.String()
+	}
+
+	msg := tgbotapi.NewMessage(chatIdInt, dataStr)
 	msg.ParseMode = "MarkdownV2"
 	bot.Send(msg)
 }
 
 func main() {
 	// They're just pointers
-	verbose := flag.Bool("verbose",false, "-verbose to be verbose")
-	follow := flag.Bool("follow", false, "-follow to keep the stdin open ")
+	verbose := flag.Bool("verbose",false, "To be verbose")
+	follow := flag.Bool("follow", false, "To keep the stdin open ")
+	md := flag.Bool("markdown", false, "Force markdown on the entire message, if is not, do it by yourself adding backquotes")
 	flag.Parse()
 	fmt.Printf("The value of test is %s\n", *verbose)
 
@@ -148,9 +167,9 @@ func main() {
 
 	// Here we craft a new msg
 	if *follow == false{
-		sendMsgQuick(bot, chatIdInt, *verbose)
+		sendMsgQuick(bot, chatIdInt, *md, *verbose)
 	}else {
-		sendMsgFollow(bot, chatIdInt,  *verbose)
+		sendMsgFollow(bot, chatIdInt, *md,   *verbose)
 	}
 	//msg := tgbotapi.NewMessage(chatIdInt, "`test from gou`")
 	//msg.ParseMode = "MarkdownV2"
