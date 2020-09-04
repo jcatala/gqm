@@ -46,5 +46,5 @@ echo "123 test without markdown" | gqm -verbose
 echo "123 test with markdown" | gqm -verbose -markdown
 
 # To make the stdin open to get constant updates
-tail -f "dns.log" | gqm -follow
+tail -f "dns.log"  | grep --line-buffered "domain" | gqm -follow
 ```
