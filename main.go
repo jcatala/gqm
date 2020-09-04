@@ -32,8 +32,24 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"path/filepath"
+	"errors"
 )
 
+
+func getConfigDir()(string, error){
+	usr, err := os.UserHomeDir()
+	if err != nil{
+		return "", err
+	}
+	path := filepath.Join( usr, ".config/gqm")
+	if _, err := os.Stat(path); !os.IsNotExist(err){
+		// Path exists
+		return path, nil
+	}
+	log.Fatalln("ERROR: Config directory does not exist!\nExiting... ")
+	return "", errors.New("ERROR: Config directory does not exist!\nExiting...")
+}
 
 
 func genBot(key string)  *tgbotapi.BotAPI {
@@ -45,7 +61,13 @@ func genBot(key string)  *tgbotapi.BotAPI {
 }
 
 func parseConfig(v bool)map[string]string {
-	cfg,err := ini.Load("gqm.ini")
+	configPath, err := getConfigDir()
+	if err != nil{
+		log.Fatalln(err)
+	}
+
+	cfgPath := filepath.Join(configPath, "gqm.ini")
+	cfg,err := ini.Load(cfgPath)
 	if err != nil{
 		log.Fatalln(err)
 	}
@@ -64,7 +86,12 @@ func parseConfig(v bool)map[string]string {
 }
 
 func updateIni(s string){
-	cfg, err := ini.Load("gqm.ini")
+	configPath, err := getConfigDir()
+	if err != nil{
+		log.Fatalln(err)
+	}
+	cfgPath := filepath.Join(configPath, "gqm.ini")
+	cfg,err := ini.Load(cfgPath)
 	if err != nil{
 		log.Fatalln(err)
 	}
