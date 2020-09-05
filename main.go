@@ -23,18 +23,17 @@ optional arguments:
 
 import (
 	"bufio"
+	"errors"
 	"flag"
 	"fmt"
 	"github.com/go-telegram-bot-api/telegram-bot-api"
+	"gopkg.in/ini.v1"
 	"io/ioutil"
 	"log"
-	"gopkg.in/ini.v1"
-	"net/url"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
-	"path/filepath"
-	"errors"
 )
 
 
@@ -133,7 +132,7 @@ func getNewChatId(bot *tgbotapi.BotAPI, saved string, v bool)  (string, error){
 }
 
 func escapeTelegramMsg(s string)(string, error) {
-	s = url.QueryEscape(s)
+	//s = url.QueryEscape(s)
 	s = strings.ReplaceAll(s, "-", `\-`)
 	s = strings.ReplaceAll(s, "+", `\+`)
 	s = strings.ReplaceAll(s, ".", `\.`)
