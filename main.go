@@ -136,6 +136,8 @@ func escapeTelegramMsg(s string)(string, error) {
 	s = url.QueryEscape(s)
 	s = strings.ReplaceAll(s, "-", `\-`)
 	s = strings.ReplaceAll(s, "+", `\+`)
+	s = strings.ReplaceAll(s, ".", `\.`)
+	s = strings.ReplaceAll(s, "#", `\#`)
 
 	return s, nil
 }
