@@ -29,6 +29,7 @@ import (
 	"io/ioutil"
 	"log"
 	"gopkg.in/ini.v1"
+	"net/url"
 	"os"
 	"strconv"
 	"strings"
@@ -148,7 +149,8 @@ func sendMsgFollow(bot *tgbotapi.BotAPI, chatIdInt int64 , md bool, v bool){
 			str.WriteString("`")
 			dataStr = str.String()
 		}
-		msg := tgbotapi.NewMessage(chatIdInt, dataStr)
+		dataEscaped := url.QueryEscape(dataStr)
+		msg := tgbotapi.NewMessage(chatIdInt, dataEscaped)
 		msg.ParseMode = "MarkdownV2"
 		bot.Send(msg)
 	}
