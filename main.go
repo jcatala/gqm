@@ -132,6 +132,13 @@ func getNewChatId(bot *tgbotapi.BotAPI, saved string, v bool)  (string, error){
 	return newChatIdstr, nil
 }
 
+func escapeTelegramMsg(s string)(string, error) {
+	s = url.QueryEscape(s)
+	s = strings.ReplaceAll(s, "-", ":")
+
+	return s, nil
+}
+
 func sendMsgFollow(bot *tgbotapi.BotAPI, chatIdInt int64 , md bool, v bool){
 
 	reader := bufio.NewReader(os.Stdin)
@@ -149,7 +156,7 @@ func sendMsgFollow(bot *tgbotapi.BotAPI, chatIdInt int64 , md bool, v bool){
 			str.WriteString("`")
 			dataStr = str.String()
 		}
-		dataEscaped := url.QueryEscape(dataStr)
+		dataEscaped, _:= escapeTelegramMsg(dataStr)
 		msg := tgbotapi.NewMessage(chatIdInt, dataEscaped)
 		msg.ParseMode = "MarkdownV2"
 		bot.Send(msg)
