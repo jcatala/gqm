@@ -1,25 +1,6 @@
 package main
 
-/*
 
-usage: sio-notification.py [-h] [-c CONFIG] [-i INFILE] [-v] [-F FILTER] [-f] [-m]
-
-Simple Shout-it-out telegram notificator
-
-optional arguments:
-  -h, --help            show this help message and exit
-  -c CONFIG, --config CONFIG
-                        Full path to config file (default is ~/.SIO.conf
-  -i INFILE, --infile INFILE
-                        Send a text file (default is stdin)
-  -v, --verbose         Turn on the verbose mode
-  -F FILTER, --filter FILTER
-                        Add a filter before sending the message (string: default: None)
-  -f, --follow          Send one line at a time
-  -m, --markdown        Force markdown on the entire message, if is not, do it by yourself adding backquotes
-
-
-*/
 
 import (
 	"bufio"
@@ -183,8 +164,8 @@ func sendMsgQuick(bot *tgbotapi.BotAPI, chatIdInt int64, md bool,  v bool){
 		str.WriteString("\n```")
 		dataStr = str.String()
 	}
-
-	msg := tgbotapi.NewMessage(chatIdInt, dataStr)
+	dataEscaped, _ := escapeTelegramMsg(dataStr)
+	msg := tgbotapi.NewMessage(chatIdInt, dataEscaped)
 	msg.ParseMode = "MarkdownV2"
 	bot.Send(msg)
 }
