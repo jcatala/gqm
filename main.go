@@ -86,7 +86,7 @@ func getNewChatId(bot *tgbotapi.BotAPI, saved string, v bool)  (string, error){
 		fmt.Println("Getting updates")
 	}
 	u := tgbotapi.NewUpdate(0)
-	u.Timeout = 10
+	u.Timeout = 5
 	updates, err := bot.GetUpdates(u)
 	if err != nil{
 		fmt.Println(err)
@@ -148,7 +148,28 @@ func sendMsgFollow(bot *tgbotapi.BotAPI, chatIdInt int64 , md bool, v bool){
 
 }
 
+func SendMsgPredefined(bot *tgbotapi.BotAPI, chatIdInt int64, md bool,  v bool, content []byte){
+
+	data := string(content)
+	if v {
+		fmt.Printf("Sending the following line: \n%s\n", data)
+	}
+	var str strings.Builder
+	dataStr := string(data)
+	if md {
+		str.WriteString("```\n")
+		str.WriteString(string(data))
+		str.WriteString("\n```")
+		dataStr = str.String()
+	}
+	dataEscaped, _ := escapeTelegramMsg(dataStr)
+	msg := tgbotapi.NewMessage(chatIdInt, dataEscaped)
+	msg.ParseMode = "MarkdownV2"
+	bot.Send(msg)
+}
+
 func sendMsgQuick(bot *tgbotapi.BotAPI, chatIdInt int64, md bool,  v bool){
+
 	data, err := ioutil.ReadAll(os.Stdin)
 	if err != nil{
 		log.Fatalln(err)
@@ -170,12 +191,15 @@ func sendMsgQuick(bot *tgbotapi.BotAPI, chatIdInt int64, md bool,  v bool){
 	bot.Send(msg)
 }
 
+
+
 func main() {
 	// They're just pointers
 	verbose := flag.Bool("verbose",false, "To be verbose")
 	follow := flag.Bool("follow", false, "To keep the stdin open ")
 	md := flag.Bool("markdown", false, "Force markdown on the entire message, if is not, do it by yourself adding backquotes")
 	debugInfo := flag.Bool("debugInfo", false, "To get debug information")
+	message := flag.String("message", "", "To send a message instead of using the stdin")
 	flag.Parse()
 
 
@@ -200,9 +224,14 @@ func main() {
 	}
 
 	// Here we craft a new msg
+	if *message != "" {
+		messageBytes := []byte(*message)
+		SendMsgPredefined(bot, chatIdInt, *md, *verbose, messageBytes)
+		return
+	}
 	if *follow == false{
 		sendMsgQuick(bot, chatIdInt, *md, *verbose)
-	}else {
+	} else {
 		sendMsgFollow(bot, chatIdInt, *md,   *verbose)
 	}
 	//msg := tgbotapi.NewMessage(chatIdInt, "`test from gou`")
