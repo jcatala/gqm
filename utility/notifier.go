@@ -145,7 +145,9 @@ func SendMsgFollow2(apiKey string, chatIdInt int64, md bool, v bool){
 	for {
 		line, _, err:= reader.ReadLine()
 		if err != nil{
-			fmt.Println(err)
+			if v {
+				fmt.Println(err)
+			}
 			continue
 			//break
 		}
