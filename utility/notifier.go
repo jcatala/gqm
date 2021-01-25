@@ -2,16 +2,18 @@ package utility
 
 import (
 	"bufio"
+	"bytes"
+	"errors"
 	"fmt"
+	"github.com/dimiro1/banner"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	"gopkg.in/ini.v1"
 	"io/ioutil"
+	"log"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
-	"log"
-	"errors"
 )
 
 func GetConfigDir()(string, error){
@@ -28,6 +30,22 @@ func GetConfigDir()(string, error){
 	return "", errors.New("ERROR: Config directory does not exist!\nExiting...")
 }
 
+
+func Banner(version string){
+	templ := fmt.Sprintf(`{{ .Title "Go Quick Message" "" 4 }}
+{{ .AnsiColor.BrightCyan }}Thanks for using gqm ! {{ .AnsiColor.Default }}
+{{ .AnsiColor.BrightGreen}}gqm version: %s {{.AnsiColor.Default}}
+Go version: {{ .GoVersion }}
+Now: {{ .Now "Monday, 2 Jan 2006" }}
+
+
+How to use:
+
+`,version)
+	isEnabled := true
+	isColorEnabled := true
+	banner.Init(os.Stdout, isEnabled, isColorEnabled,bytes.NewBufferString(templ) )
+}
 
 func GenBot(key string)  *tgbotapi.BotAPI {
 	bot, err := tgbotapi.NewBotAPI(key)
@@ -116,6 +134,37 @@ func escapeTelegramMsg(s string)(string, error) {
 	s = strings.ReplaceAll(s, "#", `\#`)
 
 	return s, nil
+}
+
+func SendMsgFollow2(apiKey string, chatIdInt int64, md bool, v bool){
+	reader := bufio.NewReader(os.Stdin)
+	// We need to read each line and send it out
+	// For each line, generate a new bot object
+	// This is a temporary fix, since I dont know yet why the bot hangs after many lines
+	fmt.Println("Testing sendmsg v2 ")
+	for {
+		line, _, err:= reader.ReadLine()
+		if err != nil{
+			break
+		}
+		if v{
+			fmt.Printf("Sending the following: %s\n",line)
+		}
+		var str strings.Builder
+		dataStr := string(line)
+		// Check if we need to use markdown
+		if md {
+			str.WriteString("`")
+			str.WriteString(string(line))
+			str.WriteString("`")
+			dataStr = str.String()
+		}
+		dataEscaped, _ := escapeTelegramMsg(dataStr)
+		bot := GenBot(apiKey)
+		msg := tgbotapi.NewMessage(chatIdInt, dataEscaped)
+		msg.ParseMode = "MarkdownV2"
+		bot.Send(msg)
+	}
 }
 
 func SendMsgFollow(bot *tgbotapi.BotAPI, chatIdInt int64 , md bool, v bool){
